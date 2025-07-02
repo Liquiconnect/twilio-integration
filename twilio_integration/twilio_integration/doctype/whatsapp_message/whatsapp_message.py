@@ -1,7 +1,7 @@
-# Copyright (c) 2021, Frappe and contributors
 # For license information, please see license.txt
 
 import frappe
+import json
 from frappe.model.document import Document
 from six import string_types
 from frappe.utils.password import get_decrypted_password
@@ -25,43 +25,46 @@ class WhatsAppMessage(Document):
 		
 		except Exception as e:
 			self.db_set('status', "Error")
-			frappe.log_error(e, title = _('Twilio WhatsApp Message Error'))
-	
+			frappe.log_error(message=_(e), title = _('Twilio WhatsApp Message Error'))
+
 	def get_message_dict(self):
 		args = {
 			'from_': self.from_,
 			'to': self.to,
-			'body': self.message,
-			'status_callback': '{}/api/method/twilio_integration.twilio_integration.api.whatsapp_message_status_callback'.format(get_site_url(frappe.local.site))
 		}
+		if self.content_sid and self.content_variables:
+			args.update({"content_sid": self.content_sid, "content_variables": self.content_variables})
+		elif self.message:
+			args.update({'body': self.message})
 		if self.media_link:
 			args['media_url'] = [self.media_link]
 
 		return args
 
 	@classmethod
-	def send_whatsapp_message(self, receiver_list, message, doctype, docname, media=None):
+	def send_whatsapp_message(self, receiver_list, doctype, docname, media=None, content_sid=None, content_variables=None, message=None):
 		if isinstance(receiver_list, string_types):
-			receiver_list = loads(receiver_list)
+			receiver_list = json.loads(receiver_list)
 			if not isinstance(receiver_list, list):
 				receiver_list = [receiver_list]
 
 		for rec in receiver_list:
-			message = self.store_whatsapp_message(rec, message, doctype, docname)
+			message = self.store_whatsapp_message(rec, doctype, docname, media,  content_sid, content_variables, message)
 			message.send()
 
-	def store_whatsapp_message(to, message, doctype=None, docname=None, media=None):
+	def store_whatsapp_message(to, doctype=None, docname=None, media=None, content_sid=None, content_variables=None, message=None):
 		sender = frappe.db.get_single_value('Twilio Settings', 'whatsapp_no')
 		wa_msg = frappe.get_doc({
 				'doctype': 'WhatsApp Message',
 				'from_': 'whatsapp:{}'.format(sender),
 				'to': 'whatsapp:{}'.format(to),
-				'message': message,
+				'message': message if message else "Nill",
 				'reference_doctype': doctype,
 				'reference_document_name': docname,
 				'media_link': media
 			}).insert(ignore_permissions=True)
-
+		wa_msg.content_sid = content_sid
+		wa_msg.content_variables = content_variables
 		return wa_msg
 
 def incoming_message_callback(args):
