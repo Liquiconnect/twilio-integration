@@ -12,6 +12,7 @@
   "disabled",
   "section_break_cazv",
   "reference_message_template",
+  "column_break_uoio",
   "reference_message_template_helper"
  ],
  "fields": [
@@ -52,12 +53,16 @@
    "fieldtype": "Small Text",
    "label": "Reference Message Template Helper",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_uoio",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-09 13:17:15.087732",
+ "modified": "2025-07-09 13:53:58.358625",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "WhatsApp Template Reference",
