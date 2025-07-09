@@ -26,7 +26,6 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Content SID",
-   "reqd": 1,
    "unique": 1
   },
   {
@@ -58,7 +57,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-09 12:24:20.279984",
+ "modified": "2025-07-09 13:17:15.087732",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "WhatsApp Template Reference",
