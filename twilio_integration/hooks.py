@@ -25,7 +25,7 @@ fixtures = [{"dt": "Custom Field", "filters": [
 # include js, css files in header of desk.html
 app_include_css = "/assets/twilio_integration/css/twilio_call_handler.css"
 app_include_js = "/assets/twilio_integration/js/twilio_call_handler.js"
-
+after_migrate = "twilio_integration.after_migrate.after_migrate"
 # include js, css files in header of web template
 # web_include_css = "/assets/twilio_integration/css/twilio_integration.css"
 # web_include_js = "/assets/twilio_integration/js/twilio_integration.js"
@@ -92,13 +92,14 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	"Email Queue": {
+        "after_insert": "twilio_integration.overrides.email_queue.update_email_queue_in_mc"
+    },
+	"WhatsApp Message": {
+        "after_insert": "twilio_integration.overrides.whatsapp_message.update_whatsapp_message_in_mc"
+    }
+}
 
 # Scheduled Tasks
 # ---------------
