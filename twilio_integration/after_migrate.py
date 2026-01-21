@@ -60,3 +60,5 @@ def create_multichannelmessage_workflow():
         })
         workflow.insert(ignore_permissions=True)
         frappe.db.commit()
+
+
