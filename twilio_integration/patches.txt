@@ -4,5 +4,4 @@
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
-lnder_banking.config.create_folder #2
 twilio_integration.patches.add_whatsapp_template
