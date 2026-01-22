@@ -146,7 +146,6 @@ def initiate_twilio_call(
 			"to_no": to_number,
 			"from_no": from_number,
 			"attempt_no": 1,
-			"max_attempts": settings.total_recurring_call,
 			"buffer_time": settings.recurring_call_buffer_time,
 			"reference_doctype": reference_doctype,
 			"reference_name": reference_name,
