@@ -10,9 +10,8 @@ from frappe.utils import cstr
 from twilio_integration.twilio_integration.doctype.whatsapp_message.whatsapp_message import (
 	WhatsAppMessage,
 )
-from urllib.parse import quote
+from urllib.parse import quote, urlencode, quote
 from frappe.utils import get_url
-from urllib.parse import quote_plus
 
 class MultiChannelMessage(Document):
 	def on_submit(self):
@@ -124,12 +123,13 @@ class MultiChannelMessage(Document):
 			frappe.throw("Message is required to initiate call")
 
 		# Build TwiML URL
-		twiml_url = (
-			get_url()
-			+ "/api/method/twilio_integration.api.recieve_call_params.twiml_say_message"
-			+ f"?msg={quote_plus(self.whatsapp_message_content)}"
-			+ f"&name={quote_plus(self.recipients_name or '')}"
-		)
+		query_params = {
+			"msg": self.whatsapp_message_content,
+			"name": self.recipients_name or 'Customer'
+		}
+		query_string = urlencode(query_params)
+		url_prefix = f'/api/method/twilio_integration.api.recieve_call_params.twiml_say_message?{query_string}'
+		twiml_url = frappe.utils.get_url() + url_prefix
 		numbers = self.split_number_strict(self.recipients_number)
 		for num in numbers:
 			frappe.call(
@@ -180,6 +180,8 @@ class MultiChannelMessage(Document):
 
 		# If split_number_strict throws, it will stop here
 		self.recipients_number = "\n".join(numbers)
+		if not self.attachment.lower().endswith("pdf"):
+			frappe.throw("File Attachment for whatsapp should be PDF")
 
 	def split_number_strict(self, txt):
 		"""
