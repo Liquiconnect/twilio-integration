@@ -12,12 +12,17 @@
   "call_sid",
   "to_no",
   "call_back_recieved",
+  "purpose",
   "call_back_data_section",
   "call_status",
   "column_break_cqqy",
   "duration",
   "section_break_kuhn",
-  "response"
+  "response",
+  "section_break_eafl",
+  "reference_doctype",
+  "column_break_dbet",
+  "reference_name"
  ],
  "fields": [
   {
@@ -84,13 +89,41 @@
   {
    "fieldname": "response",
    "fieldtype": "JSON",
-   "label": "Response"
+   "label": "Meta"
+  },
+  {
+   "depends_on": "eval: doc.type === 'Call'",
+   "fieldname": "purpose",
+   "fieldtype": "Data",
+   "label": "Purpose"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval: (doc.reference_doctype) && (doc.reference_name)",
+   "fieldname": "section_break_eafl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference Doctype",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "column_break_dbet",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Name",
+   "options": "reference_doctype"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-21 15:57:39.916289",
+ "modified": "2026-01-22 10:05:47.531260",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "Twilio Call Log",

@@ -1,12 +1,9 @@
-# Copyright (c) 2026, lnder_fintech
-# License: see license.txt
-
 import json
 from urllib.parse import parse_qs
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime, get_url
 from twilio.rest import Client
 
 
@@ -99,11 +96,6 @@ def initiate_twilio_call(
 	reference_name=None,
 	meta=None
 ):
-	"""
-	Single entry point for ALL outgoing calls.
-	Creates log first, then calls Twilio, then updates SID.
-	"""
-
 	if "twilio_integration" not in frappe.get_installed_apps():
 		frappe.throw("Twilio integration not installed")
 
@@ -117,16 +109,22 @@ def initiate_twilio_call(
 	auth_token = twilio.settings.get_password("auth_token")
 	from_number = twilio.settings.whatsapp_no
 
+	# Build callback URL dynamically (THIS was your change)
+	status_callback_url = (
+		get_url()
+		+ "/api/method/twilio_call_log_endpoint"
+	)
+
 	log = frappe.get_doc(
 		{
 			"doctype": "Twilio Call Log",
 			"type": "Call",
 			"purpose": purpose,
 			"to_no": to_number,
+			"from_no":from_number,
 			"reference_doctype": reference_doctype,
 			"reference_name": reference_name,
-			"meta": json.dumps(meta or {}),
-			"call_status": "initiated",
+			"response": json.dumps({"twiml_url":twiml_url,"status_callback_url":status_callback_url} or {}),
 		}
 	)
 	log.insert(ignore_permissions=True)
@@ -139,6 +137,8 @@ def initiate_twilio_call(
 			from_=from_number,
 			url=twiml_url,
 			record=False,
+			status_callback=status_callback_url,
+			status_callback_event=["completed"],
 		)
 
 		frappe.db.set_value(
@@ -146,17 +146,10 @@ def initiate_twilio_call(
 			log.name,
 			{
 				"call_sid": call.sid,
-				"call_status": "queued",
 			},
 		)
 
 	except Exception:
-		frappe.db.set_value(
-			"Twilio Call Log",
-			log.name,
-			"call_status",
-			"failed",
-		)
 		frappe.log_error(
 			frappe.get_traceback(),
 			"Twilio Call Initiation Failed"
@@ -166,7 +159,6 @@ def initiate_twilio_call(
 	return {
 		"log": log.name,
 		"call_sid": call.sid,
-		"status": "queued",
 	}
 
 

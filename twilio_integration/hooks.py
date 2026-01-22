@@ -129,10 +129,11 @@ doctype_js = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "twilio_integration.event.get_events"
-# }
-#
+override_whitelisted_methods = {
+	# "frappe.desk.doctype.event.event.get_events": "twilio_integration.event.get_events"
+	"twilio_call_log_endpoint":"twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.twilio_call_log_endpoint"
+}
+
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
