@@ -180,7 +180,7 @@ class MultiChannelMessage(Document):
 
 		# If split_number_strict throws, it will stop here
 		self.recipients_number = "\n".join(numbers)
-		if not self.attachment.lower().endswith("pdf"):
+		if self.attachment and not self.attachment.lower().endswith("pdf"):
 			frappe.throw("File Attachment for whatsapp should be PDF")
 
 	def split_number_strict(self, txt):

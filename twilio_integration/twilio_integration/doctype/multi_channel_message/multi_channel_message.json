@@ -26,8 +26,7 @@
   "bcc",
   "amended_from",
   "attachment_settings_section",
-  "attachment",
-  "attachment_file_type"
+  "attachment"
  ],
  "fields": [
   {
@@ -107,6 +106,7 @@
    "label": "Attachment Settings"
   },
   {
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Email\"], doc.channel)",
    "fieldname": "attachment",
    "fieldtype": "Attach",
    "label": "Attachment"
@@ -143,6 +143,7 @@
    "fetch_from": "email_queue.status",
    "fieldname": "email_status",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Email Status",
    "no_copy": 1,
    "read_only": 1
@@ -162,6 +163,7 @@
    "fetch_from": "whatsapp_message.status",
    "fieldname": "whatsapp_message_status",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "WhatsApp Message Status",
    "no_copy": 1,
    "read_only": 1
@@ -187,13 +189,6 @@
    "fieldtype": "Data",
    "label": "Recipients Name",
    "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)"
-  },
-  {
-   "fieldname": "attachment_file_type",
-   "fieldtype": "Data",
-   "label": "Attachment File Type",
-   "options": "\nPDF",
-   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -209,7 +204,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2026-01-23 00:04:14.142771",
+ "modified": "2026-01-23 00:46:45.885189",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "Multi-Channel Message",
