@@ -1,5 +1,5 @@
-# Copyright (c) 2026, lnder_fintech and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026, lnder_fintech
+# License: see license.txt
 
 import json
 from urllib.parse import parse_qs
@@ -7,7 +7,12 @@ from urllib.parse import parse_qs
 import frappe
 from frappe.model.document import Document
 from frappe.utils import now_datetime
+from twilio.rest import Client
 
+
+# -------------------------------------------------------------------
+# DocType Logic
+# -------------------------------------------------------------------
 
 class TwilioCallLog(Document):
 	def before_insert(self):
@@ -17,15 +22,17 @@ class TwilioCallLog(Document):
 		try:
 			set_call_data(self)
 		except Exception:
-			frappe.log_error(frappe.get_traceback(), "Twilio Call Log: before_insert failed")
+			frappe.log_error(
+				frappe.get_traceback(),
+				"Twilio Call Log: before_insert failed"
+			)
 
+
+# -------------------------------------------------------------------
+# Helpers
+# -------------------------------------------------------------------
 
 def _get_value(data, key):
-	"""
-	Twilio form data -> list
-	Twilio JSON -> string
-	This normalizes both.
-	"""
 	value = data.get(key)
 	if isinstance(value, list):
 		return value[0]
@@ -36,50 +43,144 @@ def set_call_data(doc):
 	if not doc.response:
 		return
 
-	response_dict = json.loads(doc.response)
+	data = json.loads(doc.response)
 
-	call_sid = _get_value(response_dict, "CallSid")
-	from_no = _get_value(response_dict, "From")
-	to_no = _get_value(response_dict, "To")
-	call_status = _get_value(response_dict, "CallStatus")
-	duration = _get_value(response_dict, "Duration")
+	call_sid = _get_value(data, "CallSid")
+	call_status = _get_value(data, "CallStatus")
+	duration = _get_value(data, "Duration")
+	from_no = _get_value(data, "From")
+	to_no = _get_value(data, "To")
 
 	if call_sid and not doc.call_sid:
 		doc.call_sid = call_sid
 
-	if from_no and not doc.from_no:
-		doc.from_no = from_no
-
-	if to_no and not doc.to_no:
-		doc.to_no = to_no
-
-	if call_status and not doc.call_status:
+	if call_status:
 		doc.call_status = call_status
 
-	if duration and not doc.duration:
-		doc.duration = int(duration)
+	if duration:
+		try:
+			doc.duration = int(duration)
+		except ValueError:
+			pass
+
+	if from_no:
+		doc.from_no = from_no
+
+	if to_no:
+		doc.to_no = to_no
 
 	if not call_sid:
 		return
 
-	call_log = frappe.db.exists("Twilio Call Log", {"call_sid": call_sid, "type": "Call"})
+	parent = frappe.db.exists(
+		"Twilio Call Log",
+		{"call_sid": call_sid, "type": "Call"}
+	)
 
-	if not call_log:
-		return
+	if parent:
+		frappe.db.set_value(
+			"Twilio Call Log",
+			parent,
+			"call_back_recieved",
+			1
+		)
 
-	current = frappe.db.get_value("Twilio Call Log", call_log, "call_back_recieved")
 
-	if not current:
-		frappe.db.set_value("Twilio Call Log", call_log, "call_back_recieved", 1)
+# -------------------------------------------------------------------
+# Generic Call Initiator
+# -------------------------------------------------------------------
 
+@frappe.whitelist()
+def initiate_twilio_call(
+	to_number,
+	twiml_url,
+	purpose,
+	reference_doctype=None,
+	reference_name=None,
+	meta=None
+):
+	"""
+	Single entry point for ALL outgoing calls.
+	Creates log first, then calls Twilio, then updates SID.
+	"""
+
+	if "twilio_integration" not in frappe.get_installed_apps():
+		frappe.throw("Twilio integration not installed")
+
+	from twilio_integration.twilio_integration.twilio_handler import Twilio
+
+	twilio = Twilio.connect()
+	if not twilio:
+		frappe.throw("Twilio not configured")
+
+	account_sid = twilio.account_sid
+	auth_token = twilio.settings.get_password("auth_token")
+	from_number = twilio.settings.whatsapp_no
+
+	log = frappe.get_doc(
+		{
+			"doctype": "Twilio Call Log",
+			"type": "Call",
+			"purpose": purpose,
+			"to_no": to_number,
+			"reference_doctype": reference_doctype,
+			"reference_name": reference_name,
+			"meta": json.dumps(meta or {}),
+			"call_status": "initiated",
+		}
+	)
+	log.insert(ignore_permissions=True)
+
+	client = Client(account_sid, auth_token)
+
+	try:
+		call = client.calls.create(
+			to=to_number,
+			from_=from_number,
+			url=twiml_url,
+			record=False,
+		)
+
+		frappe.db.set_value(
+			"Twilio Call Log",
+			log.name,
+			{
+				"call_sid": call.sid,
+				"call_status": "queued",
+			},
+		)
+
+	except Exception:
+		frappe.db.set_value(
+			"Twilio Call Log",
+			log.name,
+			"call_status",
+			"failed",
+		)
+		frappe.log_error(
+			frappe.get_traceback(),
+			"Twilio Call Initiation Failed"
+		)
+		raise
+
+	return {
+		"log": log.name,
+		"call_sid": call.sid,
+		"status": "queued",
+	}
+
+
+# -------------------------------------------------------------------
+# Callback Webhook
+# -------------------------------------------------------------------
 
 @frappe.whitelist(allow_guest=True)
 def twilio_call_log_endpoint():
 	raw_data = frappe.request.get_data(as_text=True)
 	content_type = frappe.request.headers.get("Content-Type", "")
 
-	if not raw_data or not raw_data.strip():
-		frappe.log_error("Empty request body", "Twilio Call Log Webhook")
+	if not raw_data:
+		return
 
 	try:
 		if "application/json" in content_type:
@@ -87,34 +188,21 @@ def twilio_call_log_endpoint():
 		else:
 			payload = parse_qs(raw_data)
 
-		new_doc = frappe.get_doc(
+		doc = frappe.get_doc(
 			{
 				"doctype": "Twilio Call Log",
 				"type": "Callback",
-				"response": json.dumps(payload, indent=4),
+				"response": json.dumps(payload),
 			}
 		)
-		new_doc.insert(ignore_permissions=True)
-		return json.dumps({"name": new_doc.name, "status": "Success", "status_code": 200})
-
-	except json.JSONDecodeError:
-		frappe.log_error(raw_data, "Twilio Call Log: Invalid JSON")
-
-		frappe.get_doc(
-			{
-				"doctype": "Twilio Call Log",
-				"response": raw_data,
-			}
-		).insert(ignore_permissions=True)
+		doc.insert(ignore_permissions=True)
 
 	except Exception:
-		frappe.log_error(frappe.get_traceback(), "Twilio Call Log: Webhook Failure")
-		frappe.throw("Failed to process Twilio webhook")
+		frappe.log_error(
+			frappe.get_traceback(),
+			"Twilio Callback Failure"
+		)
+		frappe.throw("Webhook processing failed")
+
 	finally:
 		frappe.db.commit()
-
-
-
-@frappe.whitelist()
-def make_twilio_call():
-    pass
