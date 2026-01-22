@@ -11,6 +11,7 @@ from twilio_integration.twilio_integration.doctype.whatsapp_message.whatsapp_mes
 	WhatsAppMessage,
 )
 from urllib.parse import quote
+from frappe.utils import get_url
 
 class MultiChannelMessage(Document):
 	def on_submit(self):
@@ -22,6 +23,8 @@ class MultiChannelMessage(Document):
 			self.trigger_send_mail_alert()
 		if self.channel == "WhatsApp":
 			self.trigger_send_whatsapp_alert()
+		if self.channel == "Call":
+			self.trigger_call_channel()
 
 	def trigger_send_whatsapp_alert(self):
 		template_name = "send_mc_alert_without_attachment"
@@ -108,6 +111,34 @@ class MultiChannelMessage(Document):
 			expose_recipients="header",
 			now=True,
 		)
+
+	def trigger_call_channel(self):
+		if self.channel != "Call":
+			return
+
+		if not self.recipients_number:
+			frappe.throw("Recipient number is required for Call")
+
+		if not self.whatsapp_message_content:
+			frappe.throw("Message is required to initiate call")
+
+		# Build TwiML URL
+		twiml_url = (
+			get_url()
+			+ "/api/method/twilio_integration.api.recieve_call_params.twiml_say_message"
+			+ f"?msg={frappe.utils.encode(self.whatsapp_message_content)}"
+			+ f"&name={frappe.utils.encode(self.recipients_name or '')}"
+		)
+		numbers = self.split_number_strict(self.recipients_number)
+		for num in numbers:
+			frappe.call(
+				"twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.initiate_twilio_call",
+				to_number=num,
+				twiml_url=twiml_url,
+				purpose="Multi Channel Call",
+				reference_doctype=self.doctype,
+				reference_name=self.name,
+			)
 
 	def _split_lines(self, value):
 		"""Convert newline-separated values to list"""
@@ -290,5 +321,3 @@ def unique_preserve_order(items):
 			seen.add(key)
 			result.append(item)
 	return result
-
-
