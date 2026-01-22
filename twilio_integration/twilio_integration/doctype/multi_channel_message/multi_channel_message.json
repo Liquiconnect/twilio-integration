@@ -193,9 +193,13 @@
   {
    "link_doctype": "WhatsApp Message",
    "link_fieldname": "reference_document_name"
+  },
+  {
+   "link_doctype": "Twilio Call Log",
+   "link_fieldname": "reference_name"
   }
  ],
- "modified": "2026-01-21 17:15:56.350525",
+ "modified": "2026-01-22 11:55:16.688281",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "Multi-Channel Message",
