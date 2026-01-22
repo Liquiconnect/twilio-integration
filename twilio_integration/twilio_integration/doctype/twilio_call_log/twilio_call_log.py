@@ -109,7 +109,6 @@ def initiate_twilio_call(
 	auth_token = twilio.settings.get_password("auth_token")
 	from_number = twilio.settings.whatsapp_no
 
-	# Build callback URL dynamically (THIS was your change)
 	status_callback_url = (
 		get_url()
 		+ "/api/method/twilio_call_log_endpoint"
