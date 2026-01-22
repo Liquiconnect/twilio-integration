@@ -12,6 +12,7 @@ from twilio_integration.twilio_integration.doctype.whatsapp_message.whatsapp_mes
 )
 from urllib.parse import quote
 from frappe.utils import get_url
+from urllib.parse import quote_plus
 
 class MultiChannelMessage(Document):
 	def on_submit(self):
@@ -126,8 +127,8 @@ class MultiChannelMessage(Document):
 		twiml_url = (
 			get_url()
 			+ "/api/method/twilio_integration.api.recieve_call_params.twiml_say_message"
-			+ f"?msg={frappe.utils.encode(self.whatsapp_message_content)}"
-			+ f"&name={frappe.utils.encode(self.recipients_name or '')}"
+			+ f"?msg={quote_plus(self.whatsapp_message_content)}"
+			+ f"&name={quote_plus(self.recipients_name or '')}"
 		)
 		numbers = self.split_number_strict(self.recipients_number)
 		for num in numbers:
