@@ -26,7 +26,8 @@
   "bcc",
   "amended_from",
   "attachment_settings_section",
-  "attachment"
+  "attachment",
+  "attachment_file_type"
  ],
  "fields": [
   {
@@ -85,6 +86,7 @@
    "max_height": "8rem"
   },
   {
+   "depends_on": "eval: doc.channel === \"WhatsApp\"",
    "fieldname": "html_helper",
    "fieldtype": "HTML",
    "label": "HTML Helper",
@@ -142,7 +144,8 @@
    "fieldname": "email_status",
    "fieldtype": "Data",
    "label": "Email Status",
-   "no_copy": 1
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
@@ -184,6 +187,13 @@
    "fieldtype": "Data",
    "label": "Recipients Name",
    "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)"
+  },
+  {
+   "fieldname": "attachment_file_type",
+   "fieldtype": "Data",
+   "label": "Attachment File Type",
+   "options": "\nPDF",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -199,7 +209,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2026-01-22 11:55:16.688281",
+ "modified": "2026-01-23 00:04:14.142771",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "Multi-Channel Message",
