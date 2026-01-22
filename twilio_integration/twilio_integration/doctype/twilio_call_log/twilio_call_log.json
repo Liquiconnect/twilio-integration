@@ -21,8 +21,11 @@
   "response",
   "section_break_eafl",
   "reference_doctype",
+  "buffer_time",
+  "next_retry_at",
   "column_break_dbet",
-  "reference_name"
+  "reference_name",
+  "attempt_no"
  ],
  "fields": [
   {
@@ -118,12 +121,27 @@
    "fieldtype": "Dynamic Link",
    "label": "Reference Name",
    "options": "reference_doctype"
+  },
+  {
+   "fieldname": "buffer_time",
+   "fieldtype": "Data",
+   "label": "Buffer Time"
+  },
+  {
+   "fieldname": "next_retry_at",
+   "fieldtype": "Datetime",
+   "label": "next retry at"
+  },
+  {
+   "fieldname": "attempt_no",
+   "fieldtype": "Int",
+   "label": "Attempt No."
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-22 10:05:47.531260",
+ "modified": "2026-01-22 11:08:54.929727",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "Twilio Call Log",
