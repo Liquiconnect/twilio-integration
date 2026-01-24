@@ -1,15 +1,10 @@
 import json
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlparse, urlunparse
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import (
-	now_datetime,
-	get_url,
-	add_to_date,
-)
+from frappe.utils import now_datetime, get_url, add_to_date
 from twilio.rest import Client
-from urllib.parse import urlparse, urlunparse
 
 
 # -------------------------------------------------------------------
@@ -34,25 +29,25 @@ class TwilioCallLog(Document):
 # Helpers
 # -------------------------------------------------------------------
 
-
 def force_https(url: str) -> str:
-    parsed = urlparse(url)
-
-    # If scheme is missing, assume http first
-    scheme = "https"
-
-    return urlunparse((
-        scheme,
-        parsed.netloc or parsed.path,  # handles urls without scheme
-        parsed.path if parsed.netloc else "",
-        parsed.params,
-        parsed.query,
-        parsed.fragment
-    ))
-
+	"""Convert URL to HTTPS (required by Twilio for callbacks)"""
+	parsed = urlparse(url)
+	
+	# If scheme is missing, assume http first
+	scheme = "https"
+	
+	return urlunparse((
+		scheme,
+		parsed.netloc or parsed.path,  # handles urls without scheme
+		parsed.path if parsed.netloc else "",
+		parsed.params,
+		parsed.query,
+		parsed.fragment
+	))
 
 
 def _get_value(data, key):
+	"""Extract value from dict, handling both single values and lists"""
 	value = data.get(key)
 	if isinstance(value, list):
 		return value[0]
@@ -60,6 +55,7 @@ def _get_value(data, key):
 
 
 def set_call_data(doc):
+	"""Parse call data from response JSON and populate document fields"""
 	if not doc.response:
 		return
 
@@ -68,6 +64,7 @@ def set_call_data(doc):
 	call_sid = _get_value(data, "CallSid")
 	call_status = _get_value(data, "CallStatus")
 	duration = _get_value(data, "Duration")
+	call_duration = _get_value(data, "CallDuration")
 	from_no = _get_value(data, "From")
 	to_no = _get_value(data, "To")
 
@@ -83,6 +80,13 @@ def set_call_data(doc):
 		except Exception:
 			pass
 
+	# Also capture total call duration if available
+	if call_duration:
+		try:
+			doc.call_duration = int(call_duration)
+		except Exception:
+			pass
+
 	if from_no:
 		doc.from_no = from_no
 
@@ -92,9 +96,10 @@ def set_call_data(doc):
 	if not call_sid:
 		return
 
+	# Find parent Call log and mark it as callback received
 	parent = frappe.db.exists(
 		"Twilio Call Log",
-		{"call_sid": call_sid, "type": "Call","call_back_recieved":0}
+		{"call_sid": call_sid, "type": "Call", "call_back_recieved": 0}
 	)
 
 	if parent:
@@ -119,6 +124,20 @@ def initiate_twilio_call(
 	reference_name=None,
 	meta=None,
 ):
+	"""
+	Initiate a Twilio call with automatic retry capability.
+	
+	Args:
+		to_number: Phone number to call
+		twiml_url: URL containing TwiML instructions
+		purpose: Purpose/reason for the call
+		reference_doctype: Optional link to another doctype
+		reference_name: Optional link to another document
+		meta: Optional metadata dict
+		
+	Returns:
+		dict: {log: log_name, call_sid: twilio_call_sid}
+	"""
 	if "twilio_integration" not in frappe.get_installed_apps():
 		frappe.throw("Twilio integration not installed")
 
@@ -130,7 +149,21 @@ def initiate_twilio_call(
 
 	settings = frappe.get_single("Twilio Settings")
 
+	# Validate settings
+	if not settings.no_of_recurring_call:
+		frappe.throw("Please configure 'Number of Recurring Calls' in Twilio Settings")
+	
+	if not settings.recurring_call_buffer_time:
+		frappe.throw("Please configure 'Recurring Call Buffer Time' in Twilio Settings")
+
 	from_number = twilio.settings.whatsapp_no
+
+	# Validate phone numbers
+	if not to_number:
+		frappe.throw("To number is required")
+	
+	if not from_number:
+		frappe.throw("From number not configured in Twilio Settings")
 
 	status_callback_url = (
 		get_url()
@@ -146,6 +179,7 @@ def initiate_twilio_call(
 			"to_no": to_number,
 			"from_no": from_number,
 			"attempt_no": 1,
+			"max_attempts": settings.no_of_recurring_call,
 			"buffer_time": settings.recurring_call_buffer_time,
 			"reference_doctype": reference_doctype,
 			"reference_name": reference_name,
@@ -177,11 +211,13 @@ def initiate_twilio_call(
 
 		log.db_set("call_sid", call.sid)
 
-	except Exception:
+	except Exception as e:
 		frappe.log_error(
 			frappe.get_traceback(),
 			"Twilio Call Initiation Failed"
 		)
+		# Mark log as failed
+		log.db_set("call_status", "failed")
 		raise
 
 	return {
@@ -195,21 +231,41 @@ def initiate_twilio_call(
 # -------------------------------------------------------------------
 
 def retry_twilio_call(log_name):
-	log = frappe.get_doc("Twilio Call Log", log_name)
+	"""
+	Retry a failed Twilio call.
+	Called by scheduler when next_retry_at time is reached.
+	"""
+	try:
+		log = frappe.get_doc("Twilio Call Log", log_name)
+	except Exception:
+		frappe.log_error(
+			frappe.get_traceback(),
+			f"Failed to fetch Twilio Call Log: {log_name}"
+		)
+		return
 
+	# Don't retry if call already completed
 	if log.call_status == "completed":
 		return
 
+	# Don't retry if max attempts reached
 	if log.attempt_no >= log.max_attempts:
+		frappe.db.set_value(
+			"Twilio Call Log",
+			log_name,
+			"call_status",
+			"max_attempts_reached"
+		)
 		return
 
-	# clear retry marker so it doesn't loop
+	# Clear retry marker so it doesn't loop
 	log.db_set("next_retry_at", None)
 
 	from twilio_integration.twilio_integration.twilio_handler import Twilio
 
 	twilio = Twilio.connect()
 	if not twilio:
+		frappe.log_error("Twilio connection failed during retry")
 		return
 
 	client = Client(
@@ -217,28 +273,44 @@ def retry_twilio_call(log_name):
 		twilio.settings.get_password("auth_token"),
 	)
 
-	status_callback_url = (
-		get_url()
-		+ "/api/method/twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.twilio_call_log_endpoint"
+	status_callback_url = force_https(
+		get_url() + "/api/method/twilio_call_log_endpoint"
 	)
 
-	twiml_url = json.loads(log.response).get("twiml_url")
+	response_data = json.loads(log.response)
+	twiml_url = response_data.get("twiml_url")
 
-	call = client.calls.create(
-		to=log.to_no,
-		from_=log.from_no,
-		url=twiml_url,
-		record=False,
-		status_callback=status_callback_url,
-		status_callback_event=["completed"],
-	)
+	if not twiml_url:
+		frappe.log_error(
+			f"TwiML URL not found in response for log {log_name}",
+			"Twilio Retry Failed"
+		)
+		return
 
-	log.db_set(
-		{
-			"call_sid": call.sid,
-			"attempt_no": log.attempt_no + 1,
-		}
-	)
+	try:
+		call = client.calls.create(
+			to=log.to_no,
+			from_=log.from_no,
+			url=twiml_url,
+			record=False,
+			status_callback=status_callback_url,
+			status_callback_event=["completed"],
+		)
+
+		log.db_set(
+			{
+				"call_sid": call.sid,
+				"attempt_no": log.attempt_no + 1,
+				"call_status": None,  # Reset status for new attempt
+				"call_back_recieved": 0,  # Reset callback flag
+			}
+		)
+
+	except Exception:
+		frappe.log_error(
+			frappe.get_traceback(),
+			f"Twilio Call Retry Failed for {log_name}"
+		)
 
 
 # -------------------------------------------------------------------
@@ -246,6 +318,10 @@ def retry_twilio_call(log_name):
 # -------------------------------------------------------------------
 
 def process_pending_retries():
+	"""
+	Process all calls that are due for retry.
+	This function is called by Frappe scheduler every minute.
+	"""
 	now = now_datetime()
 
 	logs = frappe.get_all(
@@ -253,6 +329,7 @@ def process_pending_retries():
 		filters={
 			"type": "Call",
 			"call_status": ["!=", "completed"],
+			"next_retry_at": ["is", "set"],
 			"next_retry_at": ["<=", now],
 		},
 		fields=["name"],
@@ -263,27 +340,36 @@ def process_pending_retries():
 			method="twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.retry_twilio_call",
 			queue="long",
 			log_name=row.name,
+			is_async=True,
 		)
 
 
 # -------------------------------------------------------------------
-# Callback Webhook (drives retries)
+# Callback Webhook (receives status updates from Twilio)
 # -------------------------------------------------------------------
 
 @frappe.whitelist(allow_guest=True)
 def twilio_call_log_endpoint():
+	"""
+	Webhook endpoint for Twilio call status callbacks.
+	This receives updates when calls complete, fail, etc.
+	"""
 	raw_data = frappe.request.get_data(as_text=True)
 	content_type = frappe.request.headers.get("Content-Type", "")
 
 	if not raw_data:
+		frappe.log_error("Empty webhook data received", "Twilio Callback")
 		return
 
 	try:
+		# Parse webhook payload
 		if "application/json" in content_type:
 			payload = json.loads(raw_data)
 		else:
+			# Twilio typically sends application/x-www-form-urlencoded
 			payload = parse_qs(raw_data)
 
+		# Create callback log for audit trail
 		doc = frappe.get_doc(
 			{
 				"doctype": "Twilio Call Log",
@@ -293,33 +379,99 @@ def twilio_call_log_endpoint():
 		)
 		doc.insert(ignore_permissions=True)
 
+		# Extract call details
 		call_sid = _get_value(payload, "CallSid")
 		call_status = _get_value(payload, "CallStatus")
 
-		if call_sid and call_status != "completed":
-			parent = frappe.db.exists(
-				"Twilio Call Log",
-				{"call_sid": call_sid, "type": "Call"},
+		if not call_sid:
+			frappe.log_error(
+				f"CallSid not found in payload: {payload}",
+				"Twilio Callback Missing CallSid"
 			)
+			return
 
-			if parent:
-				log = frappe.get_doc("Twilio Call Log", parent)
+		# Find the parent Call log
+		parent = frappe.db.exists(
+			"Twilio Call Log",
+			{"call_sid": call_sid, "type": "Call"},
+		)
 
-				if log.attempt_no < log.max_attempts:
-					log.db_set(
-						"next_retry_at",
-						add_to_date(
-							now_datetime(),
-							log.buffer_time,
-						),
-					)
+		if not parent:
+			frappe.log_error(
+				f"Parent Call log not found for CallSid: {call_sid}",
+				"Twilio Callback Orphan"
+			)
+			return
+
+		# Update parent log with callback status
+		update_data = {
+			"call_back_recieved": 1,
+		}
+		
+		# Update call_status on parent log
+		if call_status:
+			update_data["call_status"] = call_status
+
+		frappe.db.set_value(
+			"Twilio Call Log",
+			parent,
+			update_data
+		)
+
+		# Schedule retry if call failed and attempts remaining
+		if call_status and call_status != "completed":
+			log = frappe.get_doc("Twilio Call Log", parent)
+
+			# Check if retries are possible
+			if log.attempt_no < log.max_attempts:
+				next_retry_time = add_to_date(
+					now_datetime(),
+					minutes=int(log.buffer_time) if log.buffer_time else 5,
+				)
+				
+				frappe.db.set_value(
+					"Twilio Call Log",
+					parent,
+					"next_retry_at",
+					next_retry_time
+				)
+				
+				frappe.log_error(
+					f"Call {call_sid} status: {call_status}. Retry scheduled at {next_retry_time}",
+					"Twilio Call Retry Scheduled"
+				)
+			else:
+				frappe.db.set_value(
+					"Twilio Call Log",
+					parent,
+					"call_status",
+					"max_attempts_reached"
+				)
 
 	except Exception:
 		frappe.log_error(
 			frappe.get_traceback(),
 			"Twilio Callback Failure"
 		)
-		frappe.throw("Webhook processing failed")
 
 	finally:
 		frappe.db.commit()
+  
+  
+  
+  
+  
+@frappe.whitelist(allow_guest=True)
+def wallet_low_balance_url():
+	params = frappe.request.args
+	customer = params.get('customer')
+	wallet_type = params.get('wallet_type')
+	current_balance = params.get('current_balance')
+	response = f"""<?xml version="1.0" encoding="UTF-8"?>
+	<Response>
+	<Say>Dear {customer}, Greeting from Liquiconnect Team!</Say>
+	<Say>Your {wallet_type} wallet is having lower balance.</Say>
+	<Say>Available wallet balance ({wallet_type}) : {money_in_words(current_balance)}</Say>
+	<Say>Thanks, Liquiconnect Team.</Say>
+	</Response>"""
+	return Response(response, mimetype='text/xml')
