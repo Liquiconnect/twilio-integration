@@ -132,7 +132,8 @@ doc_events = {
 #
 override_whitelisted_methods = {
 	# "frappe.desk.doctype.event.event.get_events": "twilio_integration.event.get_events"
-	"twilio_call_log_endpoint":"twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.twilio_call_log_endpoint"
+	"twilio_call_log_endpoint":"twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.twilio_call_log_endpoint",
+	"wallet_low_balance_url":"twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.wallet_low_balance_url"
 }
 
 # each overriding function accepts a `data` argument;
