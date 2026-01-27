@@ -453,17 +453,16 @@ def wallet_low_balance_url():
     return Response(response, mimetype="text/xml")
 
 
-
 @frappe.whitelist(allow_guest=True)
 def fuel_theft_alert_url():
     params = frappe.request.args
 
-    customer = params.get("customer")
     vehicle_no = params.get("vehicle_no")
     fuel_lost = params.get("fuel_lost")
 
     response = f"""<?xml version="1.0" encoding="UTF-8"?>
     <Response>
+        <Say>Greetings from Liquiconnect Team.</Say>
         <Say>Fuel theft has been detected.</Say>
         <Say>Vehicle number {vehicle_no}.</Say>
         <Say>Approximate fuel loss is {fuel_lost} litres.</Say>
