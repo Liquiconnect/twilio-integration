@@ -150,11 +150,12 @@ def initiate_twilio_call(
     settings = frappe.get_single("Twilio Settings")
 
     # Validate settings
-    if not settings.no_of_recurring_call:
-        frappe.throw("Please configure 'Number of Recurring Calls' in Twilio Settings")
-
-    if not settings.recurring_call_buffer_time:
-        frappe.throw("Please configure 'Recurring Call Buffer Time' in Twilio Settings")
+    if settings.enable_recurring_call:
+        if not settings.no_of_recurring_call:
+            frappe.throw("Please configure 'Number of Recurring Calls' in Twilio Settings")
+    
+        if not settings.recurring_call_buffer_time:
+            frappe.throw("Please configure 'Recurring Call Buffer Time' in Twilio Settings")
 
     from_number = twilio.settings.whatsapp_no
 
@@ -463,7 +464,6 @@ def fuel_theft_alert_url():
 
     response = f"""<?xml version="1.0" encoding="UTF-8"?>
     <Response>
-        <Say>Dear {customer}, Greetings from Liquiconnect Team.</Say>
         <Say>Fuel theft has been detected.</Say>
         <Say>Vehicle number {vehicle_no}.</Say>
         <Say>Approximate fuel loss is {fuel_lost} litres.</Say>
