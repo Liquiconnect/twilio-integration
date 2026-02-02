@@ -1,0 +1,233 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "MC-.######",
+ "creation": "2026-01-21 11:18:40.851545",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_woip",
+  "channel",
+  "subject",
+  "recipients_name",
+  "email_content",
+  "whatsapp_message_content",
+  "email_queue",
+  "email_status",
+  "whatsapp_message",
+  "whatsapp_message_status",
+  "column_break_vaxx",
+  "sender",
+  "sender_email",
+  "html_helper",
+  "recipients_number",
+  "recipients",
+  "cc",
+  "bcc",
+  "amended_from",
+  "attachment_settings_section",
+  "attachment"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_woip",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Multi-Channel Message",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Channel",
+   "options": "\nCall\nWhatsApp\nEmail",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject",
+   "mandatory_depends_on": "eval: doc.channel === \"Email\""
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fieldname": "recipients",
+   "fieldtype": "Code",
+   "label": "Recipients",
+   "mandatory_depends_on": "eval: doc.channel === \"Email\"",
+   "max_height": "8rem"
+  },
+  {
+   "fieldname": "column_break_vaxx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fieldname": "cc",
+   "fieldtype": "Code",
+   "label": "CC",
+   "max_height": "8rem"
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fieldname": "bcc",
+   "fieldtype": "Code",
+   "label": "BCC",
+   "max_height": "8rem"
+  },
+  {
+   "depends_on": "eval: doc.channel === \"WhatsApp\"",
+   "fieldname": "html_helper",
+   "fieldtype": "HTML",
+   "label": "HTML Helper",
+   "options": "<div>\n    <p><strong>1</strong> &rarr; Recipients Name</p>\n    <p><strong>2</strong> &rarr; Message Content</p>\n</div>\n"
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
+   "fieldname": "recipients_number",
+   "fieldtype": "Code",
+   "label": "Recipients Number",
+   "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
+   "max_height": "8rem"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "attachment_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Attachment Settings"
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Email\"], doc.channel)",
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fieldname": "sender",
+   "fieldtype": "Link",
+   "label": "Sender",
+   "mandatory_depends_on": "eval: doc.channel === \"Email\"",
+   "options": "Email Account"
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fetch_from": "sender.email_id",
+   "fieldname": "sender_email",
+   "fieldtype": "Data",
+   "label": "Sender Email",
+   "options": "Email Account",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fieldname": "email_queue",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Email Queue",
+   "no_copy": 1,
+   "options": "Email Queue",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fetch_from": "email_queue.status",
+   "fieldname": "email_status",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Email Status",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
+   "fieldname": "whatsapp_message",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Message",
+   "no_copy": 1,
+   "options": "WhatsApp Message",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
+   "fetch_from": "whatsapp_message.status",
+   "fieldname": "whatsapp_message_status",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "WhatsApp Message Status",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.channel === \"Email\"",
+   "fieldname": "email_content",
+   "fieldtype": "Text Editor",
+   "in_list_view": 1,
+   "label": "Email Content",
+   "mandatory_depends_on": "eval: doc.channel === \"Email\""
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
+   "fieldname": "whatsapp_message_content",
+   "fieldtype": "Small Text",
+   "label": "WhatsApp Message Content",
+   "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)"
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
+   "fieldname": "recipients_name",
+   "fieldtype": "Data",
+   "label": "Recipients Name",
+   "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [
+  {
+   "link_doctype": "WhatsApp Message",
+   "link_fieldname": "reference_document_name"
+  },
+  {
+   "link_doctype": "Twilio Call Log",
+   "link_fieldname": "reference_name"
+  }
+ ],
+ "modified": "2026-01-23 00:46:45.885189",
+ "modified_by": "Administrator",
+ "module": "Twilio Integration",
+ "name": "Multi-Channel Message",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

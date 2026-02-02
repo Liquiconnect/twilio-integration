@@ -10,14 +10,19 @@ app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "developers@frappe.io"
 app_license = "MIT"
-fixtures = [{"dt": "Custom Field", "filters": [
-		[
-			"name", "in", [
-				"Notification-twilio_number", "Voice Call Settings-twilio_number"
-			]
-		]
-	]}
-, "Property Setter"]
+fixtures = [
+    {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "name",
+                "in",
+                ["Notification-twilio_number", "Voice Call Settings-twilio_number"],
+            ]
+        ],
+    },
+    "Property Setter",
+]
 
 # Includes in <head>
 # ------------------
@@ -25,7 +30,7 @@ fixtures = [{"dt": "Custom Field", "filters": [
 # include js, css files in header of desk.html
 app_include_css = "/assets/twilio_integration/css/twilio_call_handler.css"
 app_include_js = "/assets/twilio_integration/js/twilio_call_handler.js"
-
+after_migrate = "twilio_integration.after_migrate.after_migrate"
 # include js, css files in header of web template
 # web_include_css = "/assets/twilio_integration/css/twilio_integration.css"
 # web_include_js = "/assets/twilio_integration/js/twilio_integration.js"
@@ -43,8 +48,8 @@ app_include_js = "/assets/twilio_integration/js/twilio_call_handler.js"
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 doctype_js = {
-	"Notification" : "public/js/Notification.js",
-	"Voice Call Settings": "public/js/voice_call_settings.js"
+    "Notification": "public/js/Notification.js",
+    "Voice Call Settings": "public/js/voice_call_settings.js",
 }
 
 # Home Pages
@@ -55,7 +60,7 @@ doctype_js = {
 
 # website user home page (by Role)
 # role_home_page = {
-#	"Role": "home_page"
+# 	"Role": "home_page"
 # }
 
 # Generators
@@ -92,13 +97,14 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+    "Email Queue": {
+        "after_insert": "twilio_integration.overrides.email_queue.update_email_queue_in_mc"
+    },
+    "WhatsApp Message": {
+        "after_insert": "twilio_integration.overrides.whatsapp_message.update_whatsapp_message_in_mc"
+    },
+}
 
 # Scheduled Tasks
 # ---------------
@@ -129,10 +135,13 @@ doctype_js = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "twilio_integration.event.get_events"
-# }
-#
+override_whitelisted_methods = {
+    # "frappe.desk.doctype.event.event.get_events": "twilio_integration.event.get_events"
+    "twilio_call_log_endpoint": "twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.twilio_call_log_endpoint",
+    "wallet_low_balance_url": "twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.wallet_low_balance_url",
+    "fuel_theft_alert_url": "twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.fuel_theft_alert_url",
+}
+
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
@@ -145,7 +154,7 @@ doctype_js = {
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
 
 override_doctype_class = {
-	"Notification": "twilio_integration.overrides.notification.SendNotification"
+    "Notification": "twilio_integration.overrides.notification.SendNotification"
 }
 
 # boot
