@@ -140,6 +140,7 @@ override_whitelisted_methods = {
     "twilio_call_log_endpoint": "twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.twilio_call_log_endpoint",
     "wallet_low_balance_url": "twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.wallet_low_balance_url",
     "fuel_theft_alert_url": "twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.fuel_theft_alert_url",
+    "vehicle_critical_dtc_alert_url":"twilio_integration.twilio_integration.doctype.twilio_call_log.twilio_call_log.vehicle_critical_dtc_alert_url"
 }
 
 # each overriding function accepts a `data` argument;
