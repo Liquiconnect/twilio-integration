@@ -306,6 +306,20 @@ def retry_twilio_call(log_name):
         )
 
 
+
+
+def normalize_mobile_no(mobile_no, default_code="+91"):
+    if not mobile_no:
+        return None
+
+    mobile_no = mobile_no.strip()
+
+    if mobile_no.startswith("+"):
+        return mobile_no
+
+    return f"{default_code}{mobile_no}"
+
+
 # -------------------------------------------------------------------
 # Scheduler Processor (runs every minute)
 # -------------------------------------------------------------------
@@ -479,14 +493,13 @@ def fuel_theft_alert_url():
 def vehicle_critical_dtc_alert_url():
     params = frappe.request.args
 
-    customer = params.get("customer")
     vehicle_no = params.get("vehicle_no")
     dtc_code = params.get("dtc_code")
     dtc_description = params.get("dtc_description")
 
     response = f"""<?xml version="1.0" encoding="UTF-8"?>
     <Response>
-        <Say>Dear {customer}, greetings from Liquiconnect Team.</Say>
+        <Say>Greetings from Liquiconnect Team.</Say>
         <Say>Critical vehicle fault detected.</Say>
         <Say>Vehicle number {vehicle_no} has reported a critical DTC error.</Say>
         <Say>Error code {dtc_code}. {dtc_description}.</Say>
@@ -495,3 +508,4 @@ def vehicle_critical_dtc_alert_url():
     </Response>"""
 
     return Response(response, mimetype="text/xml")
+
