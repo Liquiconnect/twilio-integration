@@ -3,9 +3,8 @@ from urllib.parse import parse_qs, urlparse, urlunparse
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now_datetime, get_url, add_to_date
+from frappe.utils import add_to_date, get_url, money_in_words, now_datetime
 from twilio.rest import Client
-from frappe.utils import money_in_words
 from werkzeug.wrappers import Response
 
 # -------------------------------------------------------------------
@@ -152,10 +151,14 @@ def initiate_twilio_call(
     # Validate settings
     if settings.enable_recurring_call:
         if not settings.no_of_recurring_call:
-            frappe.throw("Please configure 'Number of Recurring Calls' in Twilio Settings")
-    
+            frappe.throw(
+                "Please configure 'Number of Recurring Calls' in Twilio Settings"
+            )
+
         if not settings.recurring_call_buffer_time:
-            frappe.throw("Please configure 'Recurring Call Buffer Time' in Twilio Settings")
+            frappe.throw(
+                "Please configure 'Recurring Call Buffer Time' in Twilio Settings"
+            )
 
     from_number = twilio.settings.whatsapp_no
 
@@ -209,7 +212,7 @@ def initiate_twilio_call(
 
         log.db_set("call_sid", call.sid)
 
-    except Exception as e:
+    except Exception:
         frappe.log_error(frappe.get_traceback(), "Twilio Call Initiation Failed")
         # Mark log as failed
         log.db_set("call_status", "failed")
@@ -303,6 +306,20 @@ def retry_twilio_call(log_name):
         )
 
 
+
+
+def normalize_mobile_no(mobile_no, default_code="+91"):
+    if not mobile_no:
+        return None
+
+    mobile_no = mobile_no.strip()
+
+    if mobile_no.startswith("+"):
+        return mobile_no
+
+    return f"{default_code}{mobile_no}"
+
+
 # -------------------------------------------------------------------
 # Scheduler Processor (runs every minute)
 # -------------------------------------------------------------------
@@ -320,7 +337,6 @@ def process_pending_retries():
         filters={
             "type": "Call",
             "call_status": ["!=", "completed"],
-            "next_retry_at": ["is", "set"],
             "next_retry_at": ["<=", now],
         },
         fields=["name"],
@@ -471,3 +487,25 @@ def fuel_theft_alert_url():
     </Response>"""
 
     return Response(response, mimetype="text/xml")
+
+
+@frappe.whitelist(allow_guest=True)
+def vehicle_critical_dtc_alert_url():
+    params = frappe.request.args
+
+    vehicle_no = params.get("vehicle_no")
+    dtc_code = params.get("dtc_code")
+    dtc_description = params.get("dtc_description")
+
+    response = f"""<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Say>Greetings from Liquiconnect Team.</Say>
+        <Say>Critical vehicle fault detected.</Say>
+        <Say>Vehicle number {vehicle_no} has reported a critical DTC error.</Say>
+        <Say>Error code {dtc_code}. {dtc_description}.</Say>
+        <Say>Please Take necessary Action immediately.</Say>
+        <Say>Thank you, Liquiconnect Team.</Say>
+    </Response>"""
+
+    return Response(response, mimetype="text/xml")
+
