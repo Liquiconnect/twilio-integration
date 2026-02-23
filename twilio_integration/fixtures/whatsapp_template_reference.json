@@ -1,0 +1,178 @@
+[
+ {
+  "content_sid": "HX3c6928cf549de86da1b3ecd920b30e58",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-07-23 16:01:32.565224",
+  "name": "Copy Alert Incharges For Unassigned Trip",
+  "reference_message_template": "Unassigned Trip Alert\n\n{{1}} trip(s) of yours are still unassigned and need your attention.\nPlease assign them before their respective deadlines.\n\nThanks",
+  "reference_message_template_helper": "{{1}} → Count",
+  "template_name": "Copy Alert Incharges For Unassigned Trip"
+ },
+ {
+  "content_sid": "HX8d3fe3ee61e94af2dc2559a24e967afe",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-07-23 16:01:21.905510",
+  "name": "Vehicle Invoice",
+  "reference_message_template": "Please create a vehicle invoice for the completed trip {{1}}\n\nVehicle No: {{2}}\nDriver Name: {{3}}\nTrip Date: {{4}}\n\nClick the link to create the invoice: {{5}}",
+  "reference_message_template_helper": "{{1}} → Invoice ID\n{{2}} → Vehicle Number\n{{3}} → Crew Member Name\n{{4}} → Date and Time\n{{5}} → URL\n",
+  "template_name": "Vehicle Invoice"
+ },
+ {
+  "content_sid": "HX56f22f5dd3666b88370ff2d584d955f5",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-07-23 16:01:14.844708",
+  "name": "Intangles Alert",
+  "reference_message_template": "Dear {{1}},\n\nFor the Vehicle {{2}}, the following alert has been triggered:\n\nType: {{3}}\n\nPlease check the vehicle for any issues and take necessary action.\nThank you for your cooperation.\n\nBest regards,\nTeam Liquiconnect",
+  "reference_message_template_helper": "{{1}} → Customer Name\n{{2}} → Vehicle Nummber\n{{3}} → Type with title\n",
+  "template_name": "Intangles Alert"
+ },
+ {
+  "content_sid": "HXb4d4619fce39bdb50c45d6a116fd50df",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-07-23 16:01:07.483214",
+  "name": "Intangles API Request Failure Alert",
+  "reference_message_template": "Dear Team,\n\nWe are currently experiencing failures in API requests, impacting various services.\n\nThe API request for {{1}} has failed with status code {{2}}.\n\nPlease check the logs for more details.\n\nThank you for your understanding.\n\nBest regards,\nLiquiconnect Team",
+  "reference_message_template_helper": "{{{1}} → API Method\n{{2}} → Status Code\n",
+  "template_name": "Intangles API Request Failure Alert"
+ },
+ {
+  "content_sid": "HX30d4ccd7d9aab3186d68d96bd47e60f1",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-11-14 15:03:03.922785",
+  "name": "Balance Alert for BPCL and Fastag",
+  "reference_message_template": "Dear {{1}},\n\nGreetings from the Liquiconnect Team!\n\nWe would like to inform you about your wallet balances as of {{2}}.\n\nFASTag Wallet {{3}}\nBPCL Wallet {{4}}\n\nPlease ensure your wallets remain funded to avoid service interruptions.\n\nBest regards,\nLiquiconnect Team",
+  "reference_message_template_helper": "{{1}} → Company Name\n{{2}} → Current Date & Time (DD-MM-YYYY HH:MM:SS)\n{{3}} → FASTag Balance (Account Name): (Account Balance)\n{{4}} → BPCL Balance (Account Name): (Account Balance)\n",
+  "template_name": "Balance Alert for BPCL and Fastag"
+ },
+ {
+  "content_sid": "HXdfcad6862c4e2f29e101e311976e1052",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-11-14 15:03:03.946946",
+  "name": "API Failure Alert Notification",
+  "reference_message_template": "Dear Team,\n\nWe are currently experiencing failures in API requests, impacting various services.\n\nThe API request for {{1}} on {{2}} has failed with status code {{3}}.\n\nPlease check the logs for more details.\n\nThank you for your understanding.\n\nBest regards,\nLiquiconnect Team",
+  "reference_message_template_helper": "{{1}} → API Method\n{{2}} → Wallet Type\n{{3}} → Status Code\n",
+  "template_name": "API Failure Alert Notification"
+ },
+ {
+  "content_sid": "HXc35f2a6870f8104060eb90eebef79728",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-11-14 15:03:03.960936",
+  "name": "Fuel Transaction Alert For Vehicle Number",
+  "reference_message_template": "Dear {{1}},\n\nPlease fill in the vehicle number to complete your fuel transaction.\n\n{{2}}\n\nThank you for your cooperation.\n\nBest regards,\nLiquiconnect Team\n",
+  "reference_message_template_helper": "{{1}} → Name\n{{2}} → Form URL\n",
+  "template_name": "Fuel Transaction Alert For Vehicle Number"
+ },
+ {
+  "content_sid": "HX06571e856426a67bd0dee4611263a55f",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-11-21 11:11:47.575410",
+  "name": "Copy OBP Single Payment OTP Alert",
+  "reference_message_template": "OBP - Alert\n\nOBP No: {{1}}\nParty: {{2}}\nParty Type: {{3}}\nAmount: ₹{{4}}\n\nReference Details\nReference Doctype: {{5}}\nReference Name: {{6}}\nAllocated Amount: ₹{{7}}\nCategory: {{8}}\nDescription: {{9}}\n\n{{10}} - Use this to process OBP\n\n🔗 View Payment: {{11}}\n\nBest regards,\nLiquiconnect Team\n",
+  "reference_message_template_helper": "\n{{1}} → OBP Number\n{{2}} → Party Name\n{{3}} → Party Type\n{{4}} → Amount\n{{5}} → Reference Doctype\n{{6}} → Reference Name\n{{7}} → Allocated Amount\n{{8}} → Category\n{{9}} → Description\n{{10}} → OTP\n{{11}} → View Payment URL\n",
+  "template_name": "Copy OBP Single Payment OTP Alert"
+ },
+ {
+  "content_sid": "HX7fcd73d145e924489fd07fc738da1fcf",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-11-21 10:56:49.776210",
+  "name": "Bulk Payment OTP Alert",
+  "reference_message_template": "OBP - Alert\n\nBulk Payment Summary:\nTotal Payments: {{1}}\nTotal Amount: {{2}}\n\n{{3}}\n\n{{4}} - Use this to process OBP\n🔗 View Payment: {{5}}\n\nBest regards,\nLiquiconnect Team,\n",
+  "reference_message_template_helper": "\n{{1}} → Total Payments\n{{2}} → Total Amount\n{{3}} → Payment Summary\n{{4}} → OTP Code\n{{5}} → OTP Verification URL\n",
+  "template_name": "Bulk Payment OTP Alert"
+ },
+ {
+  "content_sid": "HX97459786d19b2b2a522a18abcf65bedd",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-11-21 11:12:39.847344",
+  "name": "Single Payment OTP Alert in PDF",
+  "reference_message_template": "OBP - Alert\n\nOBP No: {{1}}\nParty: {{2}}\nParty Type: {{3}}\nAmount: ₹{{4}}\n\nReference Details\nReference Doctype: {{5}}\nReference Name: {{6}}\nAllocated Amount: ₹{{7}}\nCategory: {{8}}\nDescription: {{9}}\n\n{{10}} - Use this to process OBP\n\n{{11}} - PDF\n\nBest regards,\nLiquiconnect Team",
+  "reference_message_template_helper": "\n{{1}} → OBP Number\n{{2}} → Party Name\n{{3}} → Party Type\n{{4}} → Amount\n{{5}} → Reference Doctype\n{{6}} → Reference Name\n{{7}} → Allocated Amount\n{{8}} → Category\n{{9}} → Description\n{{10}} → OTP\n{{11}} → PDF\n",
+  "template_name": "Single Payment OTP Alert in PDF"
+ },
+ {
+  "content_sid": "HXc0bbbb62807808f737bb318f560d9645",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2025-11-21 10:56:50.056973",
+  "name": "Bulk Payment OTP Alert in PDF",
+  "reference_message_template": "OBP - Alert\n\nBulk Payment Summary:\nTotal Payments: {{1}}\nTotal Amount: {{2}}\n\n{{3}}\n\n{{4}} - Use this to process OBP\n\nBest regards,\nLiquiconnect Team",
+  "reference_message_template_helper": "\n{{1}} → OBP Count\n{{2}} → Amount\n{{3}} → OBP Number\n{{4}} → OTP\n{{5}} → PDF\n",
+  "template_name": "Bulk Payment OTP Alert in PDF"
+ },
+ {
+  "content_sid": "HXa204be13e132a49583d808ac1604a2e9",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2026-01-22 17:15:53.229433",
+  "name": "Low Wallet Balance Alert for BPCL, Fastag Wallet",
+  "reference_message_template": "Dear {{1}},\n\n⚠️ Low Wallet Balance Alert ⚠️\nGreetings from the Liquiconnect Team!\nWe would like to inform you that as of {{2}}, your wallet balance is running low.\n\nFASTag Wallet: {{3}}\nBPCL Wallet: {{4}}\n\nPlease top up your wallet(s) at the earliest to avoid any service interruptions.\n\nBest regards,\nLiquiconnect Team\n",
+  "reference_message_template_helper": "{{1}} → Company Name\n{{2}} → Current Date & Time (DD-MM-YYYY HH:MM:SS)\n{{3}} → FASTag Wallet Details (Account Name): (Balance)\n{{4}} → BPCL Wallet Details (Account Name): (Balance)",
+  "template_name": "Low Wallet Balance Alert for BPCL, Fastag Wallet"
+ },
+ {
+  "content_sid": "HXe277b55bb9e37d4bab4e7abc04d922bc",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2026-02-03 16:56:50.749890",
+  "name": "send_mc_alert_without_attachment",
+  "reference_message_template": "Dear {{1}},\n\n{{2}}\n\nBest regards,\nLiquiconnect Team\n",
+  "reference_message_template_helper": "\n{{1}} → Recipients Name\n{{2}} → Message Content\n",
+  "template_name": "send_mc_alert_without_attachment"
+ },
+ {
+  "content_sid": "HX1fd1ac348d066e2ed7a9b4477148fcaa",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2026-02-03 16:56:38.801739",
+  "name": "copy_send_mc_alert_with_attachment",
+  "reference_message_template": "Dear {{1}},\n\n{{2}}\n\nBest regards,\nLiquiconnect Team\n\n{{3}}\n",
+  "reference_message_template_helper": "\n{{1}} → Recipients Name\n{{2}} → Message Content\n{{3}} → Media URL\n",
+  "template_name": "copy_send_mc_alert_with_attachment"
+ },
+ {
+  "content_sid": "HX00dbaff738944f847fd6438b0f212cf3",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2026-02-23 14:07:11.015530",
+  "name": "driver_behavior_issue_report",
+  "reference_message_template": "Dear {{1}}\n\nReporting Driver Behavior issues,\nPlease Check Attachments\n\nThanks,\nLiqui-Connect Team\n\n\n\nMedia URL\n{{3}}",
+  "reference_message_template_helper": null,
+  "template_name": "driver_behavior_issue_report"
+ },
+ {
+  "content_sid": "HX8d542d801bb4a9f3c09f2103916b39bf",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "WhatsApp Template Reference",
+  "modified": "2026-01-26 23:11:49.919475",
+  "name": "vehicle_invoice_pending_summary",
+  "reference_message_template": "Vehicle Invoice Alert\n\nDate: {{1}}\n\nPlease refer to the attached report for full details.",
+  "reference_message_template_helper": null,
+  "template_name": "vehicle_invoice_pending_summary"
+ }
+]
