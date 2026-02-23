@@ -11,11 +11,13 @@
   "subject",
   "recipients_name",
   "email_content",
+  "whatsapp_template",
   "whatsapp_message_content",
   "email_queue",
   "email_status",
   "whatsapp_message",
   "whatsapp_message_status",
+  "sample_data",
   "column_break_vaxx",
   "sender",
   "sender_email",
@@ -25,6 +27,8 @@
   "cc",
   "bcc",
   "amended_from",
+  "template_mapping_section",
+  "template_details",
   "attachment_settings_section",
   "attachment"
  ],
@@ -177,18 +181,45 @@
    "mandatory_depends_on": "eval: doc.channel === \"Email\""
   },
   {
-   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel) && !doc.whatsapp_template",
    "fieldname": "whatsapp_message_content",
    "fieldtype": "Small Text",
    "label": "WhatsApp Message Content",
-   "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)"
+   "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel) && !doc.whatsapp_template"
   },
   {
-   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)",
+   "depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel) && !doc.whatsapp_template",
    "fieldname": "recipients_name",
    "fieldtype": "Data",
    "label": "Recipients Name",
-   "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel)"
+   "mandatory_depends_on": "eval: in_list([\"WhatsApp\", \"Call\"], doc.channel) && !doc.whatsapp_template"
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\"], doc.channel)",
+   "fieldname": "whatsapp_template",
+   "fieldtype": "Link",
+   "label": "WhatsApp Template",
+   "options": "WhatsApp Template Reference"
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\"], doc.channel) && doc.whatsapp_template",
+   "fieldname": "template_mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Template Mapping",
+   "mandatory_depends_on": "eval: in_list([\"WhatsApp\"], doc.channel) && !doc.whatsapp_template"
+  },
+  {
+   "fieldname": "template_details",
+   "fieldtype": "Table",
+   "label": "Template Details",
+   "options": "Template Reference"
+  },
+  {
+   "depends_on": "eval: in_list([\"WhatsApp\"], doc.channel) && doc.whatsapp_template",
+   "fetch_from": "whatsapp_template.reference_message_template",
+   "fieldname": "sample_data",
+   "fieldtype": "Small Text",
+   "label": "Sample Data"
   }
  ],
  "grid_page_length": 50,
@@ -204,7 +235,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2026-01-23 00:46:45.885189",
+ "modified": "2026-02-23 14:11:12.666847",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "Multi-Channel Message",
