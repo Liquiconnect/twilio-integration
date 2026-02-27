@@ -22,6 +22,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Data",
+   "length": 1000,
    "reqd": 1
   }
  ],
@@ -29,7 +30,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-02-23 11:51:52.977378",
+ "modified": "2026-02-27 12:18:20.017272",
  "modified_by": "Administrator",
  "module": "Twilio Integration",
  "name": "Template Reference",
