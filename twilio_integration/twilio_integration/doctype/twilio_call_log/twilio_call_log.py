@@ -180,7 +180,6 @@ def initiate_twilio_call(
             "to_no": to_number,
             "from_no": from_number,
             "attempt_no": 1,
-            "max_attempts": settings.no_of_recurring_call,
             "buffer_time": settings.recurring_call_buffer_time,
             "reference_doctype": reference_doctype,
             "reference_name": reference_name,
@@ -247,7 +246,10 @@ def retry_twilio_call(log_name):
         return
 
     # Don't retry if max attempts reached
-    if log.attempt_no >= log.max_attempts:
+    max_attempts = (
+        frappe.db.get_single_value("Twilio Settings", "no_of_recurring_call") or 0
+    )
+    if log.attempt_no >= max_attempts:
         frappe.db.set_value(
             "Twilio Call Log", log_name, "call_status", "max_attempts_reached"
         )
@@ -304,8 +306,6 @@ def retry_twilio_call(log_name):
         frappe.log_error(
             frappe.get_traceback(), f"Twilio Call Retry Failed for {log_name}"
         )
-
-
 
 
 def normalize_mobile_no(mobile_no, default_code="+91"):
@@ -425,9 +425,11 @@ def twilio_call_log_endpoint():
         # Schedule retry if call failed and attempts remaining
         if call_status and call_status != "completed":
             log = frappe.get_doc("Twilio Call Log", parent)
+            settings = frappe.get_single("Twilio Settings")
+            max_attempts = settings.no_of_recurring_call or 0
 
             # Check if retries are possible
-            if log.attempt_no < log.max_attempts:
+            if log.attempt_no < max_attempts:
                 next_retry_time = add_to_date(
                     now_datetime(),
                     minutes=int(log.buffer_time) if log.buffer_time else 5,
@@ -508,4 +510,3 @@ def vehicle_critical_dtc_alert_url():
     </Response>"""
 
     return Response(response, mimetype="text/xml")
-
